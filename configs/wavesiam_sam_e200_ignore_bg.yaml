@@ -1,0 +1,125 @@
+train_dataset:
+  dataset:
+    name: paired-image-folders
+    args:
+      classes: ['Non-damage','Minor damage','Major damage','Destroyed','background']
+      ignore_bg: true
+      palette: [[1,1,1], [2,2,2], [3,3,3], [4,4,4], [0,0,0]]  #R,G,B
+      root_path_1: /data01/YR/building/xBD/hold-test/images-pre
+      root_path_2: /data01/YR/building/xBD/hold-test/images-post
+      root_path_3: /data01/YR/building/xBD/hold-test/targets-post
+      cache: none
+      split_key: train
+  wrapper:
+    name: train
+    args:
+      inp_size: 1024
+      augment: false
+  batch_size: 1
+
+val_dataset:
+  dataset:
+    name: paired-image-folders
+    args:
+      classes: ['Non-damage','Minor damage','Major damage','Destroyed','background']
+      ignore_bg: true
+      palette: [[1,1,1], [2,2,2], [3,3,3], [4,4,4], [0,0,0]]  #R,G,B
+      root_path_1: /data01/YR/building/xBD/hold/images-pre
+      root_path_2: /data01/YR/building/xBD/hold/images-post
+      root_path_3: /data01/YR/building/xBD/hold/targets-post
+      cache: none
+      split_key: test
+  wrapper:
+    name: val
+    args:
+      inp_size: 1024
+  batch_size: 1
+
+test_dataset:
+  dataset:
+    name: paired-image-folders
+    args:
+      classes: ['Non-damage','Minor damage','Major damage','Destroyed','background']
+      ignore_bg: true
+      palette: [[1,1,1], [2,2,2], [3,3,3], [4,4,4], [0,0,0]]  #R,G,B
+      root_path_1: /data01/YR/earthquake/00/00/pre
+      root_path_2: /data01/YR/earthquake/00/00/post
+      root_path_3: /data01/YR/building/xBD/hold/targets-post
+      cache: none
+      split_key: test
+  wrapper:
+    name: val
+    args:
+      inp_size: 1024
+  batch_size: 1
+
+eval_type: seg
+sam_checkpoint: /data01/YR/building/code/CWSAM-siameses-master/save/wavesiam_sam_ignore_bg/model_epoch_DWT2_200.pth
+data_norm:
+  inp1:
+    sub:
+    - 0.5
+    div:
+    - 0.5
+  inp2:
+    sub:
+    - 0.5
+    div:
+    - 0.5
+  gt:
+    sub:
+    - 0.5
+    div:
+    - 0.5
+  gt_rgb:
+    sub:
+    - 0.5
+    div:
+    - 0.5
+model:
+  name: sam
+  args:
+    num_classes: 5
+    inp_size: 1024
+    loss: iou
+    loss_weight : [1.5, 1, 0.5, 1.9, 0.1]
+    encoder_mode:
+      name: sam
+      img_size: 1024
+      mlp_ratio: 4
+      patch_size: 16
+      qkv_bias: true
+      use_rel_pos: true
+      window_size: 14
+      out_chans: 256
+      scale_factor: 32
+      input_type: fft
+      freq_nums: 0.25
+      prompt_type: highpass
+      prompt_embed_dim: 256
+      tuning_stage: 1234
+      handcrafted_tune: true
+      embedding_tune: true
+      adaptor: adaptor
+      embed_dim: 768
+      depth: 12
+      num_heads: 12
+      global_attn_indexes:
+      - 2
+      - 5
+      - 8
+      - 11
+optimizer:
+  name: adamw
+  args:
+    lr: 0.0001
+lr_min: 1.0e-7
+epoch_max: 200
+
+multi_step_lr:
+  milestones:
+  - 1
+  gamma: 0.1
+epoch_val: 1
+epoch_save: 1
+
